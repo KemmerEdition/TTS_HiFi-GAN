@@ -1,0 +1,61 @@
+{
+  "name": "hifi_config",
+  "n_gpu": 1,
+  "arch": {
+    "type": "HiFiGan",
+    "args": {
+    }
+  },
+      "datasets":
+        {
+          "type": "LJspeechDataset",
+          "args": {
+            "part": "train",
+            "segment_size": 8192
+          }
+        },
+  "dataloaders": {
+    "type": "DataLoader",
+    "args": {
+      "batch_size": 16,
+      "shuffle": true,
+      "num_workers": 0
+    }
+  },
+  "optimizer_g": {
+    "type": "AdamW",
+    "args": {
+      "lr": 0.0002,
+      "betas": [0.8, 0.98]
+    }
+  },
+  "optimizer_d": {
+    "type": "AdamW",
+    "args": {
+      "lr": 0.0002,
+      "betas": [0.8, 0.98]
+    }
+  },
+  "lr_scheduler_g": {
+    "type": "ExponentialLR",
+    "args": {
+      "gamma": 0.999
+    }
+  },
+  "lr_scheduler_d": {
+    "type": "ExponentialLR",
+    "args": {
+      "gamma": 0.999
+    }
+  },
+  "trainer": {
+    "epochs": 150,
+    "save_dir": "saved/",
+    "save_period": 3,
+    "verbosity": 2,
+    "monitor": "min val_loss",
+    "early_stop": 100,
+    "visualize": "wandb",
+    "wandb_project": "hifi_gan",
+    "grad_norm_clip": 1.0
+  }}
