@@ -46,9 +46,9 @@ class Trainer(BaseTrainer):
             "grad norm", "loss_d_all", "loss_g_all", "loss_mel", "loss_mpd", "loss_msd",  writer=self.writer
         )
 
-        self.test_folder = ['test_data/audio_1.wav', 'test_data/audio_2.wav', 'test_data/audio_3.wav']
+        self.test_folder = ['/kaggle/working/hw_hifi/hw_4/test_data/audio_1.wav', '/kaggle/working/hw_hifi/hw_4/test_data/audio_2.wav', '/kaggle/working/hw_hifi/hw_4/test_data/audio_3.wav']
         self.test_wavs = [torchaudio.load(path)[0] for path in self.test_folder]
-        self.test_mels = [self.melspec(wav.to(device)) for wav in self.test_wavs]
+        self.test_mels = [self.melspec(wav) for wav in self.test_wavs]
 
     @staticmethod
     def move_batch_to_device(batch, device: torch.device):
@@ -98,7 +98,7 @@ class Trainer(BaseTrainer):
                     )
                 )
                 self.writer.add_scalar(
-                    "learning rate", self.lr_scheduler.get_last_lr()[0]
+                    "learning rate", self.lr_scheduler['lr_scheduler_g'].get_last_lr()[0]
                 )
 
                 self._log_scalars(self.train_metrics)
@@ -120,7 +120,7 @@ class Trainer(BaseTrainer):
     def evaluation(self):
         self.model.eval()
         for i, mel in enumerate(self.test_mels):
-            gen_wav = self.model(mel).squeeze(0)
+            gen_wav = self.model(mel.to(self.device)).squeeze(0)
             self.writer.add_audio(f"audio_{i}", gen_wav, sample_rate=22050)
 
     def _progress(self, batch_idx):

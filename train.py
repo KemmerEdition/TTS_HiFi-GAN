@@ -9,7 +9,7 @@ import torch.utils.data
 import hw_4.model as module_arch
 from hw_4.trainer import Trainer
 from hw_4.utils import prepare_device
-from hw_4.datasets import LJspeechDataset as dataset
+from hw_4 import datasets as dataset
 from hw_4.utils.parse_config import ConfigParser
 
 warnings.filterwarnings("ignore", category=UserWarning)
@@ -27,7 +27,7 @@ def main(config):
 
     # setup data_loader instances
     datasets = config.init_obj(config["datasets"], dataset)
-    dataloaders = config.init_obj(config["dataloaders"], torch.utils.data, datasets=datasets)
+    dataloaders = config.init_obj(config["dataloaders"], torch.utils.data, dataset=datasets)
 
     # build model architecture, then print to console
     model = config.init_obj(config["arch"], module_arch)

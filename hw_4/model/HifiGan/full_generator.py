@@ -66,7 +66,7 @@ class Generator(nn.Module):
         self.conv_post = weight_norm(nn.Conv1d(up_samp_channel, 1, 7, 1, 3))
 
         self.ups.apply(init_weights)
-        self.conv_post(init_weights)
+        self.conv_post.apply(init_weights)
 
     def forward(self, x):
         x = self.conv_pre(x)
