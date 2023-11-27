@@ -26,7 +26,7 @@ class MelSpectrogramConfig:
 
 
 class TrainConfig:
-    upsample_channel: int = 128
+    upsample_channel: int = 512
     upsample_rates: List[int] = [8, 8, 2, 2]
     upsample_kernel_sizes: List[int] = [16, 16, 4, 4]
     resblock_kernel_sizes: List[int] = [3, 7, 11]
