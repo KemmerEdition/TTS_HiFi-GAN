@@ -175,15 +175,18 @@ class BaseTrainer:
 
         # load optimizer state from checkpoint only when optimizer type is not changed.
         if (
-                checkpoint["config"]["optimizer"] != self.config["optimizer"] or
-                checkpoint["config"]["lr_scheduler"] != self.config["lr_scheduler"]
+                checkpoint["config"]["optimizer_d"] != self.config["optimizer_d"] or
+                checkpoint["config"]["lr_scheduler_d"] != self.config["lr_scheduler_d"] or
+                checkpoint["config"]["optimizer_g"] != self.config["optimizer_g"] or
+                checkpoint["config"]["lr_scheduler_g"] != self.config["lr_scheduler_g"]
         ):
             self.logger.warning(
                 "Warning: Optimizer or lr_scheduler given in config file is different "
                 "from that of checkpoint. Optimizer parameters not being resumed."
             )
         else:
-            self.optimizer.load_state_dict(checkpoint["optimizer"])
+            self.optimizer['optimizer_d'].load_state_dict(checkpoint["optimizer_d"])
+            self.optimizer['optimizer_g'].load_state_dict(checkpoint["optimizer_g"])
 
         self.logger.info(
             "Checkpoint loaded. Resume training from epoch {}".format(self.start_epoch)
