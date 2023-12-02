@@ -4,7 +4,7 @@ import torch.nn.functional as F
 from torch.nn.utils import weight_norm, remove_weight_norm
 
 
-def init_weights(m, mean=0.0, std=0.01):
+def init_weights(m, mean=0.0, std=1e-2):
     classname = m.__class__.__name__
     if classname.find("Conv") != -1:
         m.weight.data.normal_(mean, std)

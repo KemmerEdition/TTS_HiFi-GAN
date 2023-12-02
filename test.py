@@ -5,12 +5,13 @@ from pathlib import Path
 
 import torch
 from tqdm import tqdm
-
+import torchaudio
 import hw_4.model as module_model
 from hw_4.trainer import Trainer
 from hw_4.utils import ROOT_PATH
-from hw_4.utils.object_loading import get_dataloaders
+from hw_4 import datasets as dataset
 from hw_4.utils.parse_config import ConfigParser
+from hw_4.utils.configs import MelSpectrogram
 
 DEFAULT_CHECKPOINT_PATH = ROOT_PATH / "default_test_model" / "checkpoint.pth"
 
@@ -21,12 +22,9 @@ def main(config, out_file):
     # define cpu or gpu if possible
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    # setup data_loader instances
-    dataloaders = get_dataloaders(config)
-
     # build model architecture
     model = config.init_obj(config["arch"], module_model)
-    logger.info(model)
+    # logger.info(model)
 
     logger.info("Loading checkpoint: {} ...".format(config.resume))
     checkpoint = torch.load(config.resume, map_location=device)
@@ -38,37 +36,19 @@ def main(config, out_file):
     # prepare model for testing
     model = model.to(device)
     model.eval()
-
-    results = []
+    os.makedirs("results", exist_ok=True)
+    melspeca = MelSpectrogram()
+    test_folder = ['/content/hw_hifi/hw_4/test_data/audio_1.wav',
+                        '/content/hw_hifi/hw_4/test_data/audio_2.wav',
+                        '/content/hw_hifi/hw_4/test_data/audio_3.wav']
+    test_wavs = [torchaudio.load(path)[0] for path in test_folder]
+    test_mels = [melspeca(wav) for wav in test_wavs]
 
     with torch.no_grad():
-        for batch_num, batch in enumerate(tqdm(dataloaders["test"])):
-            batch = Trainer.move_batch_to_device(batch, device)
-            output = model(**batch)
-            if type(output) is dict:
-                batch.update(output)
-            else:
-                batch["logits"] = output
-            batch["log_probs"] = torch.log_softmax(batch["logits"], dim=-1)
-            batch["log_probs_length"] = model.transform_input_lengths(
-                batch["spectrogram_length"]
-            )
-            batch["probs"] = batch["log_probs"].exp().cpu()
-            batch["argmax"] = batch["probs"].argmax(-1)
-            for i in range(len(batch["text"])):
-                argmax = batch["argmax"][i]
-                argmax = argmax[: int(batch["log_probs_length"][i])]
-                results.append(
-                    {
-                        "ground_trurh": batch["text"][i],
-                        "pred_text_argmax": text_encoder.ctc_decode(argmax.cpu().numpy()),
-                        "pred_text_beam_search": text_encoder.ctc_beam_search(
-                            batch["probs"][i], batch["log_probs_length"][i], beam_size=100
-                        )[:10],
-                    }
-                )
-    with Path(out_file).open("w") as f:
-        json.dump(results, f, indent=2)
+        for i, mel in tqdm(enumerate(test_mels)):
+            path = ROOT_PATH / "results" / f"audio_{i}.wav"
+            gen_wav = model(mel.to(device)).squeeze(0).cpu()
+            torchaudio.save(str(path), gen_wav, sample_rate=22050)
 
 
 if __name__ == "__main__":
@@ -139,31 +119,5 @@ if __name__ == "__main__":
     if args.config is not None:
         with Path(args.config).open() as f:
             config.config.update(json.load(f))
-
-    # if `--test-data-folder` was provided, set it as a default test set
-    if args.test_data_folder is not None:
-        test_data_folder = Path(args.test_data_folder).absolute().resolve()
-        assert test_data_folder.exists()
-        config.config["data"] = {
-            "test": {
-                "batch_size": args.batch_size,
-                "num_workers": args.jobs,
-                "datasets": [
-                    {
-                        "type": "CustomDirAudioDataset",
-                        "args": {
-                            "audio_dir": str(test_data_folder / "audio"),
-                            "transcription_dir": str(
-                                test_data_folder / "transcriptions"
-                            ),
-                        },
-                    }
-                ],
-            }
-        }
-
-    assert config.config.get("data", {}).get("test", None) is not None
-    config["data"]["test"]["batch_size"] = args.batch_size
-    config["data"]["test"]["n_jobs"] = args.jobs
 
     main(config, args.output)

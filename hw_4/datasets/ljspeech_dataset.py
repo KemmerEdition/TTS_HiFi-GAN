@@ -22,7 +22,6 @@ URL_LINKS = {
     "dataset": "https://data.keithito.com/data/speech/LJSpeech-1.1.tar.bz2", 
 }
 
-# preprocessing from author's paper repository
 
 class LJspeechDataset(Dataset):
     def __init__(self, part, segment_size, data_dir=None, *args, **kwargs):

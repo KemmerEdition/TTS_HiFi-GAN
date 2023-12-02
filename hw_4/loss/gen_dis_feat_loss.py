@@ -1,11 +1,12 @@
 import torch
+import torch.nn.functional as F
 
 
 def feature_loss(fmap_r, fmap_g):
     loss = 0
     for dr, dg in zip(fmap_r, fmap_g):
         for rl, gl in zip(dr, dg):
-            loss += torch.mean(torch.abs(rl - gl))
+            loss += F.l1_loss(rl - gl)
 
     return 2 * loss
 

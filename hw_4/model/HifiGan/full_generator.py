@@ -10,21 +10,15 @@ class ResBlock(nn.Module):
     def __init__(self, channels, kernel_size, dilation):
         super().__init__()
         self.convs1 = nn.ModuleList([
-            weight_norm(nn.Conv1d(channels, channels, kernel_size, 1,
-                                  dilation=dilation[0], padding=get_padding(kernel_size, dilation[0]))),
-            weight_norm(nn.Conv1d(channels, channels, kernel_size, 1,
-                                  dilation=dilation[1], padding=get_padding(kernel_size, dilation[1]))),
-            weight_norm(nn.Conv1d(channels, channels, kernel_size, 1,
-                                  dilation=dilation[2], padding=get_padding(kernel_size, dilation[2])))
+            weight_norm(nn.Conv1d(channels, channels, kernel_size, 1, dilation=dilation[0], padding=get_padding(kernel_size, dilation[0]))),
+            weight_norm(nn.Conv1d(channels, channels, kernel_size, 1, dilation=dilation[1], padding=get_padding(kernel_size, dilation[1]))),
+            weight_norm(nn.Conv1d(channels, channels, kernel_size, 1, dilation=dilation[2], padding=get_padding(kernel_size, dilation[2])))
         ])
 
         self.convs2 = nn.ModuleList([
-            weight_norm((nn.Conv1d(channels, channels, kernel_size, 1, dilation=1,
-                                   padding=get_padding(kernel_size, 1)))),
-            weight_norm((nn.Conv1d(channels, channels, kernel_size, 1, dilation=1,
-                                   padding=get_padding(kernel_size, 1)))),
-            weight_norm((nn.Conv1d(channels, channels, kernel_size, 1, dilation=1,
-                                   padding=get_padding(kernel_size, 1))))
+            weight_norm((nn.Conv1d(channels, channels, kernel_size, 1, dilation=1, padding=get_padding(kernel_size, 1)))),
+            weight_norm((nn.Conv1d(channels, channels, kernel_size, 1, dilation=1, padding=get_padding(kernel_size, 1)))),
+            weight_norm((nn.Conv1d(channels, channels, kernel_size, 1, dilation=1, padding=get_padding(kernel_size, 1))))
         ])
 
         self.convs1.apply(init_weights)
@@ -78,8 +72,6 @@ class Generator(nn.Module):
                 sk += self.resblocks[i * self.num_kernels + j](x)
             x = sk / self.num_kernels
 
-        x = F.leaky_relu(x, 0.1)
-        x = self.conv_post(x)
-        x = torch.tanh(x)
+        x = torch.tanh(self.conv_post(F.leaky_relu(x, 0.1)))
 
         return x
