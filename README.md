@@ -32,8 +32,10 @@ If you want to resume training from checkpoint, use command below.
    ```shell
    !python -m train -c hw_4/configs/v1_config.json -r checkpoint-epoch90.pth
    ```
-## Test
+## Test 
 You only need to run following commands (download checkpoint of my model, run test.py), wait some time and enjoy.
+
+You should test this on Google Colab or the path to the test audio directory should be changed in test.py.
    ```shell
    !gdown --id 1VPOwDbota3_etXSokq6GZll9L4jbKWVu
   ```
