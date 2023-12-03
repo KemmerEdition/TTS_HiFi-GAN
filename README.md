@@ -28,6 +28,10 @@ Train model with command below (if you are not using kaggle for training, you ne
    ```shell
    !python -m train -c hw_4/configs/v1_config.json
    ```
+If you want to resume training from checkpoint, use command below.
+   ```shell
+   !python -m train -c hw_4/configs/v1_config.json -r checkpoint-epoch90.pth
+   ```
 ## Test
 You only need to run following commands (download checkpoint of my model, run test.py), wait some time and enjoy.
    ```shell
